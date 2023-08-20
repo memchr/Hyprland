@@ -174,6 +174,8 @@ void Events::listener_mapWindow(void* owner, void* data) {
             PWINDOW->m_bIsPseudotiled = true;
         } else if (r.szRule.find("nofocus") == 0) {
             PWINDOW->m_bNoFocus = true;
+        } else if (r.szRule.find("lockfocus") == 0 && !g_pCompositor->m_pFocusLockedWindow) {
+            g_pCompositor->m_pFocusLockedWindow = PWINDOW;
         } else if (r.szRule.find("noinitialfocus") == 0) {
             PWINDOW->m_bNoInitialFocus = true;
         } else if (r.szRule.find("nofullscreenrequest") == 0) {
@@ -453,7 +455,7 @@ void Events::listener_mapWindow(void* owner, void* data) {
     if (!PWINDOW->m_bNoFocus && !PWINDOW->m_bNoInitialFocus &&
         (PWINDOW->m_iX11Type != 2 || (PWINDOW->m_bIsX11 && wlr_xwayland_or_surface_wants_focus(PWINDOW->m_uSurface.xwayland))) && !workspaceSilent &&
         (!PFORCEFOCUS || PFORCEFOCUS == PWINDOW)) {
-        g_pCompositor->focusWindow(PWINDOW);
+        g_pCompositor->focusWindow(PWINDOW, nullptr);
         PWINDOW->m_fActiveInactiveAlpha.setValueAndWarp(*PACTIVEALPHA);
         PWINDOW->m_fDimPercent.setValueAndWarp(PWINDOW->m_sAdditionalConfigData.forceNoDim ? 0.f : *PDIMSTRENGTH);
     } else {

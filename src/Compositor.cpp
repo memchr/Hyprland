@@ -825,6 +825,10 @@ CMonitor* CCompositor::getMonitorFromOutput(wlr_output* out) {
 }
 
 void CCompositor::focusWindow(CWindow* pWindow, wlr_surface* pSurface) {
+    if (m_pFocusLockedWindow && m_pFocusLockedWindow != pWindow) {
+        Debug::log(LOG, "Window focus locked, ignoring request to focus window");
+        return;
+    }
 
     if (g_pCompositor->m_sSeat.exclusiveClient) {
         Debug::log(LOG, "Disallowing setting focus to a window due to there being an active input inhibitor layer.");
@@ -2239,6 +2243,9 @@ SLayerSurface* CCompositor::getLayerSurfaceFromWlr(wlr_layer_surface_v1* pLS) {
 }
 
 void CCompositor::closeWindow(CWindow* pWindow) {
+    if (!g_pCompositor->m_pFocusLockedWindow || g_pCompositor->m_pFocusLockedWindow == pWindow) {
+        g_pCompositor->m_pFocusLockedWindow = nullptr;
+    }
     if (pWindow && windowValidMapped(pWindow)) {
         g_pXWaylandManager->sendCloseWindow(pWindow);
     }

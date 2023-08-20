@@ -109,9 +109,10 @@ class CCompositor {
     void                                      createLockFile();
     void                                      removeLockFile();
 
-    wlr_surface*                              m_pLastFocus   = nullptr;
-    CWindow*                                  m_pLastWindow  = nullptr;
-    CMonitor*                                 m_pLastMonitor = nullptr;
+    wlr_surface*                              m_pLastFocus         = nullptr;
+    CWindow*                                  m_pLastWindow        = nullptr;
+    CWindow*                                  m_pFocusLockedWindow = nullptr;
+    CMonitor*                                 m_pLastMonitor       = nullptr;
 
     std::vector<CWindow*>                     m_vWindowFocusHistory; // first element is the most recently focused.
 

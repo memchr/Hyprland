@@ -887,7 +887,7 @@ bool windowRuleValid(const std::string& RULE) {
              RULE != "nomaximizerequest" && RULE != "fakefullscreen" && RULE != "nomaxsize" && RULE != "pin" && RULE != "noanim" && RULE != "dimaround" && RULE != "windowdance" &&
              RULE != "maximize" && RULE != "keepaspectratio" && RULE.find("animation") != 0 && RULE.find("rounding") != 0 && RULE.find("workspace") != 0 &&
              RULE.find("bordercolor") != 0 && RULE != "forcergbx" && RULE != "noinitialfocus" && RULE != "stayfocused" && RULE.find("bordersize") != 0 && RULE.find("xray") != 0 &&
-             RULE.find("center") != 0);
+             RULE.find("center") != 0 && RULE != "lockfocus");
 }
 
 bool layerRuleValid(const std::string& RULE) {

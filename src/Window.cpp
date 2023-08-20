@@ -654,6 +654,7 @@ CWindow* CWindow::getGroupCurrent() {
 }
 
 void CWindow::setGroupCurrent(CWindow* pWindow) {
+
     CWindow* curr     = this->m_sGroupData.pNextWindow;
     bool     isMember = false;
     while (curr != this) {
@@ -679,8 +680,10 @@ void CWindow::setGroupCurrent(CWindow* pWindow) {
     if (FULLSCREEN)
         g_pCompositor->setWindowFullscreen(PCURRENT, false, WORKSPACE->m_efFullscreenMode);
 
-    PCURRENT->setHidden(true);
-    pWindow->setHidden(false); // can remove m_pLastWindow
+    if (!g_pCompositor->m_pFocusLockedWindow || g_pCompositor->m_pFocusLockedWindow == pWindow) {
+        PCURRENT->setHidden(true);
+        pWindow->setHidden(false); // can remove m_pLastWindow
+    }
 
     g_pLayoutManager->getCurrentLayout()->replaceWindowDataWith(PCURRENT, pWindow);
 

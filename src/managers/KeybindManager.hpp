@@ -131,6 +131,7 @@ class CKeybindManager {
     static void     resizeWindow(std::string);
     static void     circleNext(std::string);
     static void     focusWindow(std::string);
+    static void     lockFocus(std::string);
     static void     setSubmap(std::string);
     static void     pass(std::string);
     static void     layoutmsg(std::string);

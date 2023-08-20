@@ -50,6 +50,7 @@ CKeybindManager::CKeybindManager() {
     m_mDispatchers["cyclenext"]                     = circleNext;
     m_mDispatchers["focuswindowbyclass"]            = focusWindow;
     m_mDispatchers["focuswindow"]                   = focusWindow;
+    m_mDispatchers["lockfocus"]                     = lockFocus;
     m_mDispatchers["submap"]                        = setSubmap;
     m_mDispatchers["pass"]                          = pass;
     m_mDispatchers["layoutmsg"]                     = layoutmsg;
@@ -1238,6 +1239,9 @@ void CKeybindManager::toggleGroup(std::string args) {
 void CKeybindManager::changeGroupActive(std::string args) {
     const auto PWINDOW = g_pCompositor->m_pLastWindow;
 
+    if (g_pCompositor->m_pFocusLockedWindow)
+        return;
+
     if (!PWINDOW)
         return;
 
@@ -1722,6 +1726,23 @@ void CKeybindManager::focusWindow(std::string regexp) {
     const auto MIDPOINT = PWINDOW->m_vRealPosition.goalv() + PWINDOW->m_vRealSize.goalv() / 2.f;
 
     g_pCompositor->warpCursorTo(MIDPOINT);
+}
+
+void CKeybindManager::lockFocus(std::string args) {
+    if (args == "lock")
+        g_pCompositor->m_pFocusLockedWindow = g_pCompositor->m_pLastWindow;
+    else if (args == "toggle")
+        g_pCompositor->m_pFocusLockedWindow = !g_pCompositor->m_pFocusLockedWindow ? g_pCompositor->m_pLastWindow : nullptr;
+    else
+        g_pCompositor->m_pFocusLockedWindow = nullptr;
+
+    if (g_pCompositor->m_pFocusLockedWindow)
+        Debug::log(LOG, "Disable window focus lock.");
+    else
+        Debug::log(LOG, "Enable window focus lock.");
+
+    g_pEventManager->postEvent(SHyprIPCEvent{"lockfocus", ""});
+    EMIT_HOOK_EVENT("lockFocus", g_pCompositor->m_pFocusLockedWindow);
 }
 
 void CKeybindManager::setSubmap(std::string submap) {
