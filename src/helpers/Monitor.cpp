@@ -554,7 +554,10 @@ void CMonitor::changeWorkspace(CWorkspace* const pWorkspace, bool internal) {
         if (const auto PLASTWINDOW = pWorkspace->getLastFocusedWindow(); PLASTWINDOW)
             g_pCompositor->focusWindow(PLASTWINDOW);
         else {
-            g_pCompositor->focusWindow(nullptr);
+            CWindow* pWindow = g_pCompositor->getTopLeftWindowOnWorkspace(pWorkspace->m_iID);
+            if (!pWindow)
+                pWindow = g_pCompositor->getFirstWindowOnWorkspace(pWorkspace->m_iID);
+            g_pCompositor->focusWindow(pWindow);
             g_pInputManager->simulateMouseMovement();
         }
 
