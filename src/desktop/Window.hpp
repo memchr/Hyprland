@@ -433,6 +433,7 @@ class CWindow {
     bool                     isInCurvedCorner(double x, double y);
     bool                     hasPopupAt(const Vector2D& pos);
     int                      popupsCount();
+    bool                     isNearEdge(const Vector2D& pos, double threshold);
 
     void                     applyGroupRules();
     void                     createGroup();

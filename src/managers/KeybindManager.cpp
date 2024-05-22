@@ -1042,6 +1042,11 @@ void CKeybindManager::changeworkspace(std::string args) {
     } else
         pWorkspaceToChangeTo->rememberPrevWorkspace(PCURRENTWORKSPACE);
 
+    static auto* const PFOLLOWMOUSE = (Hyprlang::INT* const*)g_pConfigManager->getConfigValuePtr("input:follow_mouse");
+
+    if (auto PLASTWINDOW = pWorkspaceToChangeTo->getLastFocusedWindow(); PLASTWINDOW && **PFOLLOWMOUSE == 1)
+        g_pCompositor->warpCursorTo(PLASTWINDOW->middle());
+
     if (!g_pInputManager->m_bLastFocusOnLS) {
         if (g_pCompositor->m_pLastFocus)
             g_pInputManager->sendMotionEventsToFocused();

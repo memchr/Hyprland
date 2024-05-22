@@ -31,6 +31,15 @@ CWindow::CWindow() {
     ;
 }
 
+bool CWindow::isNearEdge(const Vector2D& pos, double threshold) {
+    auto const wbox = getWindowIdealBoundingBoxIgnoreReserved();
+    CBox const ibox{wbox.x + threshold, wbox.y + threshold, wbox.width - 2 * threshold, wbox.height - 2 * threshold};
+
+    return wbox.containsPoint(pos) && !ibox.containsPoint(pos);
+}
+
+
+
 CWindow::~CWindow() {
     if (g_pCompositor->m_pLastWindow.lock().get() == this) {
         g_pCompositor->m_pLastFocus = nullptr;

@@ -2390,10 +2390,31 @@ void CCompositor::warpCursorTo(const Vector2D& pos, bool force) {
     // warpCursorTo should only be used for warps that
     // should be disabled with no_warps
 
-    static auto PNOWARPS = CConfigValue<Hyprlang::INT>("cursor:no_warps");
+    static auto PNOWARPS        = CConfigValue<Hyprlang::INT>("cursor:no_warps");
+    static auto PNOWARPSFOCUSED = CConfigValue<Hyprlang::INT>("general:no_cursor_warps_if_focused");
+    static auto PGAPSINDATA     = CConfigValue<Hyprlang::CUSTOMTYPE>("general:gaps_in");
+    auto*       PGAPSIN         = (CCssGapData*)(PGAPSINDATA.ptr())->getData();
 
-    if (*PNOWARPS && !force)
-        return;
+    if (!force) {
+        if (*PNOWARPS)
+            return;
+
+        auto mouseCoords = g_pInputManager->getMouseCoordsInternal();
+
+        // If cursor is within the area of the last focused window on the target workspace, don't wrap.
+        if (*PNOWARPSFOCUSED) {
+            auto pWindowFocused     = m_pLastWindow;
+            auto pWindowUnderCursor = vectorToWindowUnified(mouseCoords, RESERVED_EXTENTS | INPUT_EXTENTS | ALLOW_FLOATING);
+            if (pWindowFocused && pWindowUnderCursor && pWindowFocused == pWindowUnderCursor && !pWindowFocused->isNearEdge(mouseCoords, PGAPSIN->top + 1))
+                return;
+        }
+
+        // Don't wrap if cursor is above top layers, such as waybar.
+        Vector2D surfaceCoords;
+        PHLLS    ppFoundLayerSurface;
+        if (vectorToLayerSurface(mouseCoords, &m_pLastMonitor->m_aLayerSurfaceLayers[ZWLR_LAYER_SHELL_V1_LAYER_TOP], &surfaceCoords, &ppFoundLayerSurface))
+            return;
+    }
 
     g_pPointerManager->warpTo(pos);
 
