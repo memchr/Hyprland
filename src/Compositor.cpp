@@ -14,7 +14,7 @@
 #include <helpers/SdDaemon.hpp> // for SdNotify
 #endif
 #include <ranges>
-#include "helpers/VarList.hpp"
+#include "helpers/varlist/VarList.hpp"
 #include "protocols/FractionalScale.hpp"
 #include "protocols/PointerConstraints.hpp"
 #include "protocols/LayerShell.hpp"
@@ -23,6 +23,9 @@
 #include "protocols/core/Subcompositor.hpp"
 #include "desktop/LayerSurface.hpp"
 #include "xwayland/XWayland.hpp"
+
+#include <hyprutils/string/String.hpp>
+using namespace Hyprutils::String;
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -1056,7 +1059,7 @@ SP<CWLSurfaceResource> CCompositor::vectorToLayerSurface(const Vector2D& pos, st
         if (ls->fadingOut || !ls->layerSurface || (ls->layerSurface && !ls->layerSurface->surface->mapped) || ls->alpha.value() == 0.f)
             continue;
 
-        auto [surf, local] = ls->layerSurface->surface->at(pos - ls->geometry.pos());
+        auto [surf, local] = ls->layerSurface->surface->at(pos - ls->geometry.pos(), true);
 
         if (surf) {
             if (surf->current.input.empty())
@@ -1106,6 +1109,17 @@ PHLWINDOW CCompositor::getFullscreenWindowOnWorkspace(const int& ID) {
 
 bool CCompositor::isWorkspaceVisible(PHLWORKSPACE w) {
     return valid(w) && w->m_bVisible;
+}
+
+bool CCompositor::isWorkspaceVisibleNotCovered(PHLWORKSPACE w) {
+    if (!valid(w))
+        return false;
+
+    const auto PMONITOR = getMonitorFromID(w->m_iMonitorID);
+    if (PMONITOR->activeSpecialWorkspace)
+        return PMONITOR->activeSpecialWorkspace->m_iID == w->m_iID;
+
+    return PMONITOR->activeWorkspace->m_iID == w->m_iID;
 }
 
 PHLWORKSPACE CCompositor::getWorkspaceByID(const int& id) {
