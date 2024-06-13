@@ -351,6 +351,8 @@ void CCompositor::cleanup() {
     g_pXWaylandManager.reset();
     g_pPointerManager.reset();
     g_pSeatManager.reset();
+    g_pHyprCtl.reset();
+    g_pEventLoopManager.reset();
 
     if (m_sWLRRenderer)
         wlr_renderer_destroy(m_sWLRRenderer);
@@ -364,6 +366,7 @@ void CCompositor::cleanup() {
     if (m_critSigSource)
         wl_event_source_remove(m_critSigSource);
 
+    wl_event_loop_destroy(m_sWLEventLoop);
     wl_display_terminate(m_sWLDisplay);
     m_sWLDisplay = nullptr;
 
@@ -1361,6 +1364,10 @@ void CCompositor::addToFadingOutSafe(PHLLS pLS) {
     m_vSurfacesFadingOut.emplace_back(pLS);
 }
 
+void CCompositor::removeFromFadingOutSafe(PHLLS ls) {
+    std::erase(m_vSurfacesFadingOut, ls);
+}
+
 void CCompositor::addToFadingOutSafe(PHLWINDOW pWindow) {
     const auto FOUND = std::find_if(m_vWindowsFadingOut.begin(), m_vWindowsFadingOut.end(), [&](PHLWINDOWREF& other) { return other.lock() == pWindow; });
 
@@ -2098,9 +2105,11 @@ void CCompositor::moveWorkspaceToMonitor(PHLWORKSPACE pWorkspace, CMonitor* pMon
     if (POLDMON) {
         g_pLayoutManager->getCurrentLayout()->recalculateMonitor(POLDMON->ID);
         updateFullscreenFadeOnWorkspace(POLDMON->activeWorkspace);
+        updateSuspendedStates();
     }
 
     updateFullscreenFadeOnWorkspace(pWorkspace);
+    updateSuspendedStates();
 
     // event
     g_pEventManager->postEvent(SHyprIPCEvent{"moveworkspace", pWorkspace->m_szName + "," + pMonitor->szName});

@@ -351,6 +351,10 @@ void CInputManager::mouseMoveUnified(uint32_t time, bool refocus) {
         if (pFoundWindow) {
             if (!pFoundWindow->m_bIsX11) {
                 foundSurface = g_pCompositor->vectorWindowToSurface(mouseCoords, pFoundWindow, surfaceCoords);
+                if (!foundSurface) {
+                    foundSurface = pFoundWindow->m_pWLSurface->resource();
+                    surfacePos   = pFoundWindow->m_vRealPosition.value();
+                }
             } else {
                 foundSurface = pFoundWindow->m_pWLSurface->resource();
                 surfacePos   = pFoundWindow->m_vRealPosition.value();
@@ -1226,12 +1230,20 @@ void CInputManager::destroyKeyboard(SP<IKeyboard> pKeyboard) {
     std::erase_if(m_vKeyboards, [pKeyboard](const auto& other) { return other == pKeyboard; });
 
     if (m_vKeyboards.size() > 0) {
-        const auto PNEWKEYBOARD = m_vKeyboards.back();
-        g_pSeatManager->setKeyboard(PNEWKEYBOARD);
-        PNEWKEYBOARD->active = true;
-    } else {
+        bool found = false;
+        for (auto& k : m_vKeyboards | std::views::reverse) {
+            if (!k->wlr())
+                continue;
+
+            g_pSeatManager->setKeyboard(k);
+            found = true;
+            break;
+        }
+
+        if (!found)
+            g_pSeatManager->setKeyboard(nullptr);
+    } else
         g_pSeatManager->setKeyboard(nullptr);
-    }
 
     removeFromHIDs(pKeyboard);
 }
